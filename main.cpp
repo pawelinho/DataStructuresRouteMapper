@@ -1,11 +1,13 @@
 #include <iostream>
-#include "address.h"
+#include "address_manager.h"
 
-int main()
-{
-    std::cout << "Route Mapping System for Delivery Drivers" << std::endl;
-    Address addr("Delivery Depot", 10, 20);
-    std::cout << "Created Address:\n";
-    addr.print();
+int main() {
+    AddressManager manager;
+    manager.addAddress("Depot", 10, 20);
+    manager.addAddress("Address 1", 30, 40);
+
+    std::cout << "Addresses in Manager:\n";
+    manager.printAddresses();
+
     return 0;
 }
