@@ -60,7 +60,7 @@ public:
                 for (const auto &edge : node.second)
                 {
                     Node *neighborNode = new Node(new Address(edge.first));
-                    neighborNode->g = edge.second;
+                    neighborNode->costFromStart = edge.second;
                     adjacentNodes->insert(neighborNode);
                 }
             }
@@ -98,52 +98,58 @@ public:
     {
         LinkedList<Node> *openList = new LinkedList<Node>();
         Node *startNode = new Node(const_cast<Address *>(start));
+        startNode->costFromStart = 0;
         openList->insert(startNode);
 
-        std::unordered_map<Address *, float> distanceMap;
-        std::unordered_map<Address *, Node *> visitedNodes;
-        distanceMap[startNode->address] = 0.0f;
-        visitedNodes[startNode->address] = startNode;
+        std::unordered_map<std::string, Node *> visitedNodes;
+        visitedNodes[startNode->address->name] = startNode;
+
+        std::cout << "Starting Dijkstra\n";
 
         while (!openList->isEmpty())
         {
             Node *currentNode = openList->findLowestCostNode();
             openList->remove(currentNode);
 
+            std::cout << "Current Node: " << currentNode->address->name << " with cost: " << currentNode->costFromStart << "\n";
+
             LinkedList<Node> *adjacentNodes = getAdjacentNodes(currentNode->address);
-            Node *neighborNode = adjacentNodes->firstNode;
-            while (neighborNode != nullptr)
+            Node *adjNode = adjacentNodes->firstNode;
+            while (adjNode != nullptr)
             {
-                float currentCost = currentNode->g + getEdgeWeight(currentNode->address, neighborNode->address);
-                if (neighborNode->g == 0 || currentCost < neighborNode->g)
+                float tentativeCost = currentNode->costFromStart + getEdgeWeight(currentNode->address, adjNode->address);
+                std::cout << "Checking adj node: " << adjNode->address->name << " with tentative cost: " << tentativeCost << "\n";
+                if (visitedNodes.find(adjNode->address->name) == visitedNodes.end() || tentativeCost < visitedNodes[adjNode->address->name]->costFromStart)
                 {
-                    neighborNode->g = currentCost;
-                    neighborNode->parentNode = currentNode;
-                    distanceMap[neighborNode->address] = currentCost;
-                    visitedNodes[neighborNode->address] = neighborNode;
+                    adjNode->costFromStart = tentativeCost;
+                    adjNode->parentNode = currentNode;
+                    visitedNodes[adjNode->address->name] = adjNode;
+                    if (!openList->contains(adjNode))
+                    {
+                        openList->insert(adjNode);
+                    }
                 }
-                if (!openList->contains(neighborNode))
-                {
-                    openList->insert(neighborNode);
-                }
-                neighborNode = neighborNode->nextNode;
+                adjNode = adjNode->nextNode;
             }
-
-            delete adjacentNodes; // Free memory allocated for adjacent nodes
         }
 
-        // Find the node with the smallest distance
+        // Find the node with the smallest distance that is not the start node
         float minDistance = 9999;
-        for (const auto &[address, distance] : distanceMap)
+        for (const auto &[name, node] : visitedNodes)
         {
-            if (distance < minDistance)
+            if (node->costFromStart < minDistance && name != start->name)
             {
-                minDistance = distance;
-                optimalEndNode = address;
+                minDistance = node->costFromStart;
+                optimalEndNode = node->address;
             }
         }
 
-        Node *optimalEndNodePointer = visitedNodes[optimalEndNode];
+        if (optimalEndNode == nullptr)
+        {
+            optimalEndNode = startNode->address;
+        }
+
+        Node *optimalEndNodePointer = visitedNodes[optimalEndNode->name];
 
         return reconstructPath(optimalEndNodePointer);
     }
@@ -153,7 +159,7 @@ public:
     {
         Stack<Node> *pathStack = new Stack<Node>(getNumberOfNodes());
         Node *currentNode = goalNode;
-        while (currentNode != nullptr)
+        while (currentNode->parentNode != nullptr)
         {
             pathStack->push(currentNode);
             currentNode = currentNode->parentNode;
