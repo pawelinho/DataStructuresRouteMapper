@@ -15,11 +15,6 @@ int main() {
     addressManager.addAddress("Address 8", 30, 30);
     addressManager.addAddress("Address 9", 33, 20);
     addressManager.addAddress("Address 10", 35, 25);
-    addressManager.addAddress("Address 11", 67, 29);
-    addressManager.addAddress("Address 12", 78, 40);
-    addressManager.addAddress("Address 13", 79, 40);
-    addressManager.addAddress("Address 14", 90, 50);
-    addressManager.addAddress("Address 15", 100, 59);
 
     std::cout << "Generated Addresses:\n";
     addressManager.printAddresses();
@@ -63,6 +58,7 @@ int main() {
 
     Stack<Node>* pathStack = graph.dijkstra(&startAddress, &endAddress);
     std::vector<std::string> route;
+    std::cout << "Pathstack:\n" << pathStack;
 
     if (pathStack) {
         std::cout << "Planned route:\n";

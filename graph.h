@@ -56,6 +56,7 @@ public:
                     adjNode->costFromStart = edge.second;
                     adjacentNodes->insert(adjNode);
                 }
+                break;
             }
         }
         return adjacentNodes;
@@ -75,53 +76,62 @@ public:
                 }
             }
         }
-        return 9999; // If edge not found
+        return 9999; // If edge not found, return a very large number
     }
 
-    Stack<Node>* dijkstra(const Address* start, const Address* end) {
-        LinkedList<Node>* openList = new LinkedList<Node>();
-        Node* startNode = new Node(const_cast<Address*>(start));
+    Node* findLowestNode(LinkedList<Node>* lst) {
+        double lowest = std::numeric_limits<double>::max();
+        Node* lowestNode = nullptr;
+        Node* current = lst->firstNode;
+        while (current != nullptr) {
+            if (current->costFromStart < lowest) {
+                lowest = current->costFromStart;
+                lowestNode = current;
+            }
+            current = current->nextNode;
+        }
+        return lowestNode;
+    }
+
+    Stack<Node>* dijkstra(Address* start, Address* end) {
+        LinkedList<Node>* open = new LinkedList<Node>();
+        Node* startNode = new Node(start);
         startNode->costFromStart = 0;
-        openList->insert(startNode);
+        open->insert(startNode);
 
         std::unordered_map<std::string, Node*> visitedNodes;
-        visitedNodes[startNode->address->name] = startNode;
+        visitedNodes[start->name] = startNode;
 
-        std::unordered_map<std::string, float> costMap;
-        costMap[startNode->address->name] = 0.0f;
+        std::cout << "Starting Dijkstra's Algorithm\n";
 
-        std::cout << "Starting Dijkstra\n";
-
-        while (!openList->isEmpty()) {
-            Node* currentNode = openList->findLowestCostNode();
-            openList->remove(currentNode);
-
-            if (currentNode->address->name == end->name) {
-                std::cout << "End node reached: " << currentNode->address->name << "\n";
-                delete openList; // Free memory allocated for the open list
-                return reconstructPath(currentNode);
-            }
+        while (!open->isEmpty()) {
+            Node* currentNode = findLowestNode(open);
+            open->remove(currentNode);
 
             std::cout << "Current Node: " << currentNode->address->name << " with cost: " << currentNode->costFromStart << "\n";
+
+            if (currentNode->address->name == end->name) {
+                return reconstructPath(currentNode);
+            }
 
             LinkedList<Node>* adjacentNodes = getAdjacentNodes(currentNode->address);
             Node* adjNode = adjacentNodes->firstNode;
             while (adjNode != nullptr) {
-                float tentativeCost = currentNode->costFromStart + getEdgeWeight(currentNode->address, adjNode->address);
+                double tentativeCost = currentNode->costFromStart + getEdgeWeight(currentNode->address, adjNode->address);
                 std::cout << "Checking adj: " << adjNode->address->name << " with tentative cost: " << tentativeCost << "\n";
 
-                if (costMap.find(adjNode->address->name) == costMap.end() || tentativeCost < costMap[adjNode->address->name]) {
+                if (visitedNodes.find(adjNode->address->name) == visitedNodes.end() || tentativeCost < adjNode->costFromStart) {
                     adjNode->costFromStart = tentativeCost;
                     adjNode->parentNode = currentNode;
-                    costMap[adjNode->address->name] = tentativeCost;
-                    visitedNodes[adjNode->address->name] = adjNode;
-
-                    if (!openList->contains(adjNode)) {
-                        openList->insert(adjNode);
+                    if (visitedNodes.find(adjNode->address->name) == visitedNodes.end()) {
+                        open->insert(adjNode);
+                        visitedNodes[adjNode->address->name] = adjNode;
                     }
                 }
+
                 adjNode = adjNode->nextNode;
             }
+
         }
 
         return nullptr; // If no path is found
