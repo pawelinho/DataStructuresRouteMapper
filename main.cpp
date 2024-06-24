@@ -2,49 +2,77 @@
 #include "graph.h"
 #include "address_manager.h"
 
-int main()
-{
+int main() {
     AddressManager addressManager;
     addressManager.addAddress("Delivery Depot", 10, 20);
-    addressManager.addAddress("Address 1", 10, 40);
-    addressManager.addAddress("Address 2", 20, 60);
-    addressManager.addAddress("Address 3", 30, 80);
-    addressManager.addAddress("Address 4", 40, 100);
+    addressManager.addAddress("Address 1", 1, 4);
+    addressManager.addAddress("Address 2", 2, 6);
+    addressManager.addAddress("Address 3", 5, 8);
+    addressManager.addAddress("Address 4", 6, 10);
+    addressManager.addAddress("Address 5", 8, 10);
+    addressManager.addAddress("Address 6", 13, 11);
+    addressManager.addAddress("Address 7", 20, 14);
+    addressManager.addAddress("Address 8", 30, 30);
+    addressManager.addAddress("Address 9", 33, 20);
+    addressManager.addAddress("Address 10", 35, 25);
+    addressManager.addAddress("Address 11", 67, 29);
+    addressManager.addAddress("Address 12", 78, 40);
+    addressManager.addAddress("Address 13", 79, 40);
+    addressManager.addAddress("Address 14", 90, 50);
+    addressManager.addAddress("Address 15", 100, 59);
 
     std::cout << "Generated Addresses:\n";
     addressManager.printAddresses();
 
     Graph graph;
-    for (auto &address : addressManager.getAddresses())
-    {
+    for (auto &address : addressManager.getAddresses()) {
         graph.addNode(address);
     }
-    graph.addEdge(addressManager.getAddresses()[0], addressManager.getAddresses()[1], 5.0);
-    graph.addEdge(addressManager.getAddresses()[0], addressManager.getAddresses()[2], 10.0);
-    graph.addEdge(addressManager.getAddresses()[1], addressManager.getAddresses()[3], 15.0);
-    graph.addEdge(addressManager.getAddresses()[2], addressManager.getAddresses()[3], 20.0);
-    graph.addEdge(addressManager.getAddresses()[3], addressManager.getAddresses()[4], 25.0);
 
-    Address startAddress = addressManager.getAddresses()[0];
-    Address *optimalEndAddress = nullptr;
+    graph.addEdge(addressManager.getAddresses()[0], addressManager.getAddresses()[1], 2);
+    graph.addEdge(addressManager.getAddresses()[0], addressManager.getAddresses()[2], 2);
+    graph.addEdge(addressManager.getAddresses()[1], addressManager.getAddresses()[2], 1);
+    graph.addEdge(addressManager.getAddresses()[1], addressManager.getAddresses()[3], 5);
 
-    std::cout << "Planning route from " << startAddress.name << " to the best end node:\n";
-    Stack<Node> *pathStack = graph.dijkstra(&startAddress, optimalEndAddress);
+    graph.addEdge(addressManager.getAddresses()[2], addressManager.getAddresses()[3], 2);
+    graph.addEdge(addressManager.getAddresses()[2], addressManager.getAddresses()[4], 7);
+    graph.addEdge(addressManager.getAddresses()[2], addressManager.getAddresses()[5], 10);
 
-    if (optimalEndAddress)
-    {
-        std::cout << "Optimal end node: " << optimalEndAddress->name << "\n";
-    }
-    else
-    {
-        std::cout << "No optimal end node found.\n";
-    }
 
-    std::cout << "Planned route:\n";
-    while (!pathStack->isEmpty())
-    {
-        Node *node = pathStack->pop();
-        node->print();
+    graph.addEdge(addressManager.getAddresses()[3], addressManager.getAddresses()[5], 2);
+    graph.addEdge(addressManager.getAddresses()[3], addressManager.getAddresses()[6], 2);
+
+    graph.addEdge(addressManager.getAddresses()[4], addressManager.getAddresses()[6], 3);
+    graph.addEdge(addressManager.getAddresses()[4], addressManager.getAddresses()[7], 30);
+    graph.addEdge(addressManager.getAddresses()[4], addressManager.getAddresses()[8], 12);
+    graph.addEdge(addressManager.getAddresses()[5], addressManager.getAddresses()[6], 3);
+    graph.addEdge(addressManager.getAddresses()[5], addressManager.getAddresses()[7], 10);
+    
+    graph.addEdge(addressManager.getAddresses()[6], addressManager.getAddresses()[7], 4);
+    graph.addEdge(addressManager.getAddresses()[6], addressManager.getAddresses()[8], 7);
+    graph.addEdge(addressManager.getAddresses()[7], addressManager.getAddresses()[8], 4);
+    graph.addEdge(addressManager.getAddresses()[7], addressManager.getAddresses()[9], 5);
+    graph.addEdge(addressManager.getAddresses()[7], addressManager.getAddresses()[10], 15);
+    graph.addEdge(addressManager.getAddresses()[8], addressManager.getAddresses()[10], 6);
+
+
+    graph.printWeights();
+
+    Address startAddress = addressManager.getAddresses().front();
+    Address endAddress = addressManager.getAddresses().back();
+
+    Stack<Node>* pathStack = graph.dijkstra(&startAddress, &endAddress);
+    std::vector<std::string> route;
+
+    if (pathStack) {
+        std::cout << "Planned route:\n";
+        while (!pathStack->isEmpty()) {
+            Node* node = pathStack->pop();
+            route.push_back(node->address->name);
+            std::cout << node->address->name << "\n";
+        }
+    } else {
+        std::cerr << "No path found.\n";
     }
 
     return 0;

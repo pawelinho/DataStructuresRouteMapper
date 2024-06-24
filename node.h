@@ -16,12 +16,17 @@ public:
         std::cout << address->name << " (" << address->xCoordinate << ", " << address->yCoordinate << ") -> cost: " << costFromStart << "\n";
     }
 
-    bool operator!=(const Node& otherNode) const {
-        return address->name != otherNode.address->name;
+    bool operator !=(const Node& rhd) {
+        return (address->name != rhd.address->name);
     }
-
-    bool operator==(const Node& otherNode) const {
-        return address->name == otherNode.address->name;
+    bool operator <(const Node& rhd) {
+        return (address->name < rhd.address->name);
+    }
+    bool operator ==(const Node& rhd) {
+        return (address->name == rhd.address->name);
+    }
+    bool operator >(const Node& rhd) {
+        return (address->name > rhd.address->name);
     }
 };
 
